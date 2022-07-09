@@ -1,0 +1,40 @@
+{
+  "name": "arlo",
+  "version": "1.0.0",
+  "description": "A library to interact with Arlo camera systems written in Typescript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/easton36/arlo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/easton36/arlo/issues"
+  },
+  "homepage": "https://github.com/easton36/arlo#readme",
+  "devDependencies": {
+    "@types/node": "^18.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.30.5",
+    "@typescript-eslint/parser": "^5.30.5",
+    "eslint": "^8.19.0",
+    "prettier": "2.7.1"
+  },
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/events": "^3.0.0",
+    "@types/readline-sync": "^1.4.4",
+    "@types/tough-cookie": "^4.0.2",
+    "axios": "^0.27.2",
+    "axios-cookiejar-support": "^4.0.2",
+    "eslint-config-prettier": "^8.5.0",
+    "events": "^3.3.0",
+    "node-fetch": "^3.2.6",
+    "readline-sync": "^1.4.10",
+    "tough-cookie": "^4.0.0"
+  }
+}
