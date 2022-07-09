@@ -31,6 +31,7 @@
     "index.ts"
   ],
   "exclude": [/* Specify files to exclude from the compilation. */
-    "node_modules"
+    "node_modules",
+    "dist"
   ],
 }
