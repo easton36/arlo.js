@@ -106,6 +106,5 @@ dist
 # Ignore built ts files
 dist/**/*
 
-src/**/*.js
-
 tests/
+test/
