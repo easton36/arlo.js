@@ -4,14 +4,21 @@
   "description": "A library to interact with Arlo camera systems written in Typescript",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "format": "prettier --write '**/*.{ts}'"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/easton36/arlo.git"
   },
-  "keywords": ["Arlo", "IOT", "Camera", "Camera System", "Javascript", "Typescript"],
-  "author": "Easton",
+  "keywords": [
+    "Arlo",
+    "IOT",
+    "Camera",
+    "Camera System",
+    "Javascript",
+    "Typescript"
+  ],
+  "author": "Easton (https://easton.gg)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/easton36/arlo/issues"
@@ -33,6 +40,7 @@
     "axios-cookiejar-support": "^4.0.2",
     "eslint-config-prettier": "^8.5.0",
     "events": "^3.3.0",
+    "jsdoc": "^3.6.10",
     "node-fetch": "^3.2.6",
     "readline-sync": "^1.4.10",
     "tough-cookie": "^4.0.0"
