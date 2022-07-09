@@ -10,8 +10,8 @@
     "type": "git",
     "url": "git+https://github.com/easton36/arlo.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["Arlo", "IOT", "Camera", "Camera System", "Javascript", "Typescript"],
+  "author": "Easton",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/easton36/arlo/issues"
