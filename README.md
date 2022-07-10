@@ -19,7 +19,7 @@ const credentials = {
 };
 
 (async ()=>{
-    const arlo = new Client(config);
+    const arlo = new Client(credentials);
     await arlo.login();
 
     let profile = await arlo.getProfile();
@@ -32,7 +32,7 @@ Installation is done using the
 [`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
 ```console
-npm install arlo.js
+$ npm install arlo.js
 ```
 
 ## Documentation
