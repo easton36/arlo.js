@@ -14,6 +14,22 @@ export interface ROUTES_TYPE {
     GET_FRIENDS: string;
     GET_DEVICE_LOCATIONS: string;
     SET_DEVICE_NAME: string;
+    SUBSCRIBE_TO_STREAM: string;
+    NOTIFY_DEVICE: string;
+    RESTART_BASESTATION: string;
+    DEVICE_BASE: string;
+    CHANGE_PASSWORD: string;
+    UPDATE_PROFILE: string;
+    SET_PRIMARY_FACTOR: string;
+    START_PAIRING_FACTOR: string;
+    FINISH_PAIRING_FACTOR: string;
+    REMOVE_FACTOR: string;
+}
+
+export interface CONFIG{
+    username: string;
+    password: string;
+    twoFactorType: string | boolean
 }
 
 export interface LOGIN_RESPONSE{
@@ -163,4 +179,16 @@ export interface FRIEND_TYPE{
     adminUser: boolean;
     email: string;
     [key: string]: any;
+}
+
+export interface NOTIFY_PAYLOAD{
+    action: string;
+    resource: string;
+    publishResponse: boolean;
+    from?: string;
+    to?: string;
+    transId?: string;
+    properties?: {
+        [key: string]: any;
+    }
 }

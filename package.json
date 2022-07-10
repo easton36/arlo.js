@@ -1,6 +1,6 @@
 {
   "name": "arlo.js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A library to interact with Arlo camera systems written in Typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
     "Typescript"
   ],
   "author": "Easton (https://easton.gg)",
-  "license": "ISC",
+  "license": "GNU General Public License v3.0",
   "bugs": {
     "url": "https://github.com/easton36/arlo/issues"
   },
@@ -36,12 +36,14 @@
   "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/events": "^3.0.0",
+    "@types/eventsource": "^1.1.9",
     "@types/readline-sync": "^1.4.4",
     "@types/tough-cookie": "^4.0.2",
     "axios": "^0.27.2",
     "axios-cookiejar-support": "^4.0.2",
     "eslint-config-prettier": "^8.5.0",
     "events": "^3.3.0",
+    "eventsource": "^2.0.2",
     "jsdoc": "^3.6.10",
     "node-fetch": "^3.2.6",
     "readline-sync": "^1.4.10",

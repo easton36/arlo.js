@@ -4,9 +4,12 @@ import { CookieJar } from 'tough-cookie';
 import * as readline from 'readline-sync';
 import assert from './utils/assert';
 
-import { ROUTES, BASE_URL } from './lib/constants';
+import { createSpecialAuthToken } from './utils/helpers';
 
-import { 
+import { ROUTES, BASE_URL, AUTH_HEADERS } from './lib/constants';
+
+import {
+    CONFIG,
     LOGIN_RESPONSE, 
     HEADERS_TYPE, 
     FACTOR_TYPE, 
@@ -17,23 +20,24 @@ import {
     ACCOUNT_RESPONSE,
     DEVICE_RESPONSE,
     DEVICE_LOCATION_RESPONSE
-} from './lib/constants.d';
+} from './lib/types';
 
 /**
- * @param {string} username - Arlo username
- * @param {string} password - Arlo password
- * @param {string} twoFactorType - Optional. Two factor type. Either sms or email
+ * Arlo Client
+ * @class Client
+ * @param {CONFIG} config - Arlo authentication configuration
  */
 const Client: any = class{
     username: string;
     password: string;
     twoFactorType: string | boolean;
-    headers: HEADERS_TYPE;
+    issued: number | null;
     userId: string;
+    headers: HEADERS_TYPE;
     CookieJar: CookieJar;
     client: any;
 
-    constructor(username: string, password: string, twoFactorType: string | boolean = false) {
+    constructor({ username = '', password = '', twoFactorType = false}: CONFIG){
         if(twoFactorType && (twoFactorType !== 'sms' && twoFactorType !== 'email')){
             throw new Error('Invalid twoFactorType. Choose either sms or email');
         }
@@ -47,6 +51,7 @@ const Client: any = class{
 
         this.headers = {};
         this.userId = '';
+        this.issued = null;
     }
     /**
      * Login to Arlo Cloud
@@ -122,18 +127,6 @@ const Client: any = class{
     private async loginMfa(username: string, password: string, twoFactorType: string): Promise<LOGIN_RESPONSE> {
         let base64Password: string = new (Buffer as any).from(password, 'utf8').toString('base64');
 
-        let headers: HEADERS_TYPE = {
-            'DNT': '1',
-            'schemaVersion': '1',
-            'Auth-Version': '2',
-            'Content-Type': 'application/json; charset=UTF-8',
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_1_2 like Mac OS X) AppleWebKit/604.3.5 (KHTML, like Gecko) Mobile/15B202 NETGEAR/v1 (iOS Vuezone)',
-            'Origin': `${BASE_URL}`,
-            'Referer': `${BASE_URL}/`,
-            'Source': 'arloCamWeb',
-            'TE': 'Trailers',
-        };
-
         // authenticate
         let authResponse: AxiosResponse = await this.client({
             method: 'POST',
@@ -144,13 +137,14 @@ const Client: any = class{
                 email: username,
                 password: base64Password,
             },
-            headers: headers
+            headers: AUTH_HEADERS
         });
         //validate response
         assert(authResponse.data.meta.code === 200, JSON.stringify(authResponse.data.meta));
 
         let authResponseData: LOGIN_RESPONSE = authResponse.data;
 
+        this.issued = authResponseData.data.issued;
         this.userId = authResponseData.data.userId;
         
         let token = authResponseData.data.token;
@@ -164,7 +158,7 @@ const Client: any = class{
                 data: authResponseData.data.issued
             },
             headers: {
-                ...headers,
+                ...AUTH_HEADERS,
                 ...this.headers
             }
         });
@@ -185,7 +179,7 @@ const Client: any = class{
                 factorId: primaryFactorType.factorId,
             },
             headers: {
-                ...headers,
+                ...AUTH_HEADERS,
                 ...this.headers
             }
         });
@@ -209,7 +203,7 @@ const Client: any = class{
                 otp: mfaCode
             },
             headers: {
-                ...headers,
+                ...AUTH_HEADERS,
                 ...this.headers
             }
         });
@@ -289,6 +283,171 @@ const Client: any = class{
         });
 
         assert(response.data.success, 'Failed to get friends');
+
+        return response.data.data;
+    }
+
+    /**
+     * Get arlo account two factor authentication methods
+     * @returns {Promise<FACTOR_RESPONSE[]>} Arlo account two factor authentication methods
+    */
+    public async getTwoFactorMethods(): Promise<FACTOR_TYPE[]> {
+        //get email factor id
+        let factorsResponse: AxiosResponse = await this.client({
+            method: 'GET',
+            url: ROUTES.GET_FACTORS,
+            params: {
+                data: this.issued
+            },
+            headers: {
+                ...AUTH_HEADERS,
+                authorization: createSpecialAuthToken(this.headers['Authorization']),
+            }
+        });
+        
+        //validate response
+        assert(factorsResponse.data.meta.code === 200, JSON.stringify(factorsResponse.data.meta));
+
+        let factorItems: FACTOR_TYPE[] = factorsResponse.data.data.items;
+
+        return factorItems;
+    }
+
+    /**
+     * Change arlo account password
+     * @param {string} password - New password
+     * @returns {Promise<void>}
+    */
+    public async changePassword(password: string): Promise<void> {
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.CHANGE_PASSWORD,
+            data: {
+                currentPassword: this.password,
+                newPassword: password
+            },
+            headers: this.headers
+        });
+
+        assert(response.data.success, 'Failed to change password');
+
+        this.password = password;
+
+        return response.data.data;
+    }
+
+    /**
+     * Update arlo account profile
+     * @param {string} firstName - First name
+     * @param {string} lastName - Last name
+     * @returns {Promise<void>}
+    */
+    public async updateProfile(firstName: string, lastName: string): Promise<void> {
+        let response: AxiosResponse = await this.client({
+            method: 'PUT',
+            url: ROUTES.UPDATE_PROFILE,
+            data: {
+                firstName: firstName,
+                lastName: lastName
+            },
+            headers: this.headers
+        });
+
+        assert(response.data.success, 'Failed to update profile');
+
+        return response.data.data;
+    }
+
+    /**
+     * Set primary two factor authentication method
+     * @param {string} factorId - Two factor authentication ID. See FACTOR_TYPE 
+    */
+    public async setPrimaryTwoFactorMethod(factorId: string): Promise<void> {
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.SET_PRIMARY_FACTOR,
+            data: {
+                factorId: factorId
+            },
+            headers: {
+                ...AUTH_HEADERS,
+                authorization: createSpecialAuthToken(this.headers['Authorization']),
+            }
+        });
+    
+        assert(response.data.meta.code === 200, JSON.stringify(response.data.meta));
+    
+        return response.data.data;
+    }
+
+    /**
+     * Add another two factor authentication method
+     * @param {string} factor - Two factor authentication method to add.
+     * @param {string} factorType - Two factor authentication method type. EMAIL or SMS\
+     * @returns {Promise<void>}
+    */
+    public async addTwoFactorMethod(factor: string, factorType: string): Promise<void> {
+        assert(['EMAIL', 'SMS'].includes(factorType.toUpperCase()), 'Invalid factor type');
+
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.START_PAIRING_FACTOR,
+            data: {
+                factorData: factor,
+                factorType: factorType.toUpperCase()
+            },
+            headers: {
+                ...AUTH_HEADERS,
+                authorization: createSpecialAuthToken(this.headers['Authorization']),
+            }
+        });
+
+        assert(response.data.meta.code === 200, JSON.stringify(response.data.meta));
+
+        let startPairingData = response.data.data;
+
+        //get factor auth code from user
+        let mfaCode: string = readline.question('Enter the 2FA code sent to your new method:\n'); 
+        assert(mfaCode, 'No 2FA code entered');
+
+        //complete factor auth
+        let completeResponse: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.FINISH_PAIRING_FACTOR,
+            data: {
+                factorPairingCode: startPairingData.factorPairingCode,
+                isBrowserTrusted: true,
+                otp: mfaCode
+            },
+            headers: {
+                ...AUTH_HEADERS,
+                authorization: createSpecialAuthToken(this.headers['Authorization']),
+            }
+        });
+
+        assert(completeResponse.data.meta.MFA_STATE === 'ENABLED', JSON.stringify(completeResponse.data.meta));
+
+        return completeResponse.data;
+    }
+
+    /**
+     * Remove two factor authentication method
+     * @param {string} factorId - Two factor method ID. See FACTOR_TYPE
+    */
+    public async removeTwoFactorMethod(factorId: string): Promise<void> {
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.REMOVE_FACTOR,
+            data: {
+                factorId: factorId
+            },
+            headers: {
+                ...AUTH_HEADERS,
+                authorization: createSpecialAuthToken(this.headers['Authorization']),
+            }
+        });
+
+        assert(response.data.meta.code === 200, JSON.stringify(response.data.meta));
 
         return response.data.data;
     }
