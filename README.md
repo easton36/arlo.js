@@ -3,7 +3,6 @@ A library to interact with [Arlo](https://www.arlo.com/en-us/) systems written i
 
   ![License](https://img.shields.io/github/license/easton36/arlo.js)
   ![Version](https://img.shields.io/npm/v/arlo.js)
-  ![Install Size](https://img.shields.io/npm/dm/arlo.js)
   ![Downloads](https://img.shields.io/npm/dt/arlo.js)
 
 ### Library is currently a work in progress. Most of the features are not yet implemented.
