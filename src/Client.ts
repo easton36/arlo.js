@@ -314,6 +314,33 @@ const Client: any = class{
     }
 
     /**
+     * Change arlo account email
+     * @param {string} email New email 
+     * @returns {Promise<void>}
+    */
+    public async changeEmail(email: string): Promise<void> {
+        let base64Password: string = new (Buffer as any).from(this.password, 'utf8').toString('base64');
+
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.CHANGE_EMAIL,
+            data: {
+                EnvSource: 'prod',
+                currentPassword: base64Password,
+                newEmail: email,
+            },
+            headers: {
+                ...AUTH_HEADERS,
+                authorization: createSpecialAuthToken(this.headers['Authorization']),
+            }
+        });
+
+        assert(response.data.meta.code === 200, JSON.stringify(response.data.meta));
+
+        return response.data.data;
+    }
+
+    /**
      * Change arlo account password
      * @param {string} password - New password
      * @returns {Promise<void>}

@@ -1,10 +1,10 @@
-import { ROUTES_TYPE, HEADERS_TYPE } from './types';
+import { HEADERS_TYPE } from './types';
 
 export const BASE_URL: string = 'https://my.arlo.com';
 export const AUTH_URL: string = 'https://ocapi-app.arlo.com';
 export const API_URL: string = `https://myapi.arlo.com`;
 
-export const ROUTES: ROUTES_TYPE = {
+export const ROUTES: any = {
     LOGIN: `${AUTH_URL}/api/auth`,
     LOGOUT: `${API_URL}/hmsweb/logout`,
     GET_FACTORS: `${AUTH_URL}/api/getFactors`,
@@ -24,6 +24,7 @@ export const ROUTES: ROUTES_TYPE = {
     GET_SESSION: `${API_URL}/hmsweb/users/session/v2`, //v1 route returns error
     GET_DEVICE_LOCATIONS: `${API_URL}/hmsweb/users/locations`,
 
+    CHANGE_EMAIL: `${AUTH_URL}/api/updateEmailCombined`,
     CHANGE_PASSWORD: `${API_URL}/hmsweb/users/changePassword`,
     UPDATE_PROFILE: `${API_URL}/hmsweb/users/profile`,
     SET_PRIMARY_FACTOR: `${AUTH_URL}/api/setPrimaryFactor`,

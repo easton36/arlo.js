@@ -7,6 +7,8 @@ A library to interact with [Arlo](https://www.arlo.com/en-us/) systems written i
 
 ### Library is currently a work in progress. Most of the features are not yet implemented.
 
+Lots of thanks to [Arlo.py](https://github.com/jeffreydwalter/arlo)! I don't have to do nearly as much reverse engineering thanks to them.
+
 ```js
 const { Client, Camera, Basestation } = require('arlo.js');
 
@@ -35,8 +37,6 @@ npm install arlo.js
 
 ## Documentation
 Documentation will be available on the [Github Wiki](https://github.com/easton36/arlo.js/wiki)
-
-Lots of inspiration from [Arlo.py](https://github.com/jeffreydwalter/arlo)! I don't have to do nearly as much reverse engineering thanks to them.
 
 ## Examples
 View the [examples](https://github.com/easton36/arlo.js/tree/master/examples)! Feel free to fork and submit your own!

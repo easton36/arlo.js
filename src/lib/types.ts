@@ -1,31 +1,3 @@
-export interface ROUTES_TYPE {
-    LOGIN: string;
-    LOGOUT: string;
-    GET_FACTORS: string;
-    START_AUTH: string;
-    FINISH_AUTH: string;
-    GET_DEVICES: string;
-    MODIFY_FRIEND: string;
-    ADD_FRIEND: string;
-    REMOVE_FRIEND: string;
-    GET_PROFILE: string;
-    GET_SESSION: string;
-    GET_ACCOUNT: string;
-    GET_FRIENDS: string;
-    GET_DEVICE_LOCATIONS: string;
-    SET_DEVICE_NAME: string;
-    SUBSCRIBE_TO_STREAM: string;
-    NOTIFY_DEVICE: string;
-    RESTART_BASESTATION: string;
-    DEVICE_BASE: string;
-    CHANGE_PASSWORD: string;
-    UPDATE_PROFILE: string;
-    SET_PRIMARY_FACTOR: string;
-    START_PAIRING_FACTOR: string;
-    FINISH_PAIRING_FACTOR: string;
-    REMOVE_FACTOR: string;
-}
-
 export interface CONFIG{
     username: string;
     password: string;
