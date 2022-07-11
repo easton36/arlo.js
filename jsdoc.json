@@ -2,7 +2,7 @@
     "plugins": ["plugins/markdown"],
     "recurseDepth": 10,
     "source": {
-        "includePattern": ".+\\.js(doc|x)?$",
+        "includePattern": ".+\\.ts(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
     "tags": {

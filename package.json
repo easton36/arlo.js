@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/easton36/arlo.git"
+    "url": "git+https://github.com/easton36/arlo.js.git"
   },
   "keywords": [
     "Arlo",
@@ -23,29 +23,27 @@
   "author": "Easton (https://easton.gg)",
   "license": "GNU General Public License v3.0",
   "bugs": {
-    "url": "https://github.com/easton36/arlo/issues"
+    "url": "https://github.com/easton36/arlo.js/issues"
   },
-  "homepage": "https://github.com/easton36/arlo#readme",
+  "homepage": "https://github.com/easton36/arlo.js#readme",
   "devDependencies": {
-    "@types/node": "^18.0.3",
-    "@typescript-eslint/eslint-plugin": "^5.30.5",
-    "@typescript-eslint/parser": "^5.30.5",
-    "eslint": "^8.19.0",
-    "prettier": "2.7.1"
-  },
-  "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/events": "^3.0.0",
     "@types/eventsource": "^1.1.9",
+    "@types/node": "^18.0.3",
     "@types/readline-sync": "^1.4.4",
     "@types/tough-cookie": "^4.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.30.5",
+    "@typescript-eslint/parser": "^5.30.5",
+    "eslint": "^8.19.0",
+    "eslint-config-prettier": "^8.5.0",
+    "jsdoc": "^3.6.10",
+    "prettier": "2.7.1"
+  },
+  "dependencies": {
     "axios": "^0.27.2",
     "axios-cookiejar-support": "^4.0.2",
-    "eslint-config-prettier": "^8.5.0",
     "events": "^3.3.0",
-    "eventsource": "^2.0.2",
-    "jsdoc": "^3.6.10",
-    "node-fetch": "^3.2.6",
     "readline-sync": "^1.4.10",
     "tough-cookie": "^4.0.0"
   }

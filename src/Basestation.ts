@@ -1,12 +1,10 @@
 import { EventEmitter } from 'events';
-import EventSource from 'eventsource';
 import { AxiosResponse } from 'axios';
-import { CookieJar } from 'tough-cookie';
 
 import assert from './utils/assert';
 import { createTransactionId } from './utils/helpers';
 
-import { ROUTES, AUTH_URL } from './lib/constants';
+import { ROUTES } from './lib/constants';
 
 import {
     HEADERS_TYPE,
@@ -19,8 +17,8 @@ const Basestation: any = class extends EventEmitter{
     userId: string;
     headers: HEADERS_TYPE;
     basestation: DEVICE_RESPONSE;
-    CookieJar: CookieJar;
-    events: EventSource | null;
+    streaming: boolean;
+    pingInterval: NodeJS.Timer | null;
 
     constructor(client: any, basestation: DEVICE_RESPONSE){
         super();
@@ -30,11 +28,8 @@ const Basestation: any = class extends EventEmitter{
         this.userId = client.userId;
         this.headers = client.headers;
         this.basestation = basestation;
-        this.CookieJar = client.CookieJar;
-        this.events = null;
-
-        console.log(this.headers);
-        console.log(this.CookieJar.getCookieStringSync(AUTH_URL))
+        this.streaming = false;
+        this.pingInterval = null;
     }
 
     /**
@@ -44,6 +39,9 @@ const Basestation: any = class extends EventEmitter{
     */
     public notifyDevice(payload: NOTIFY_PAYLOAD): Promise<void>{
         return new Promise<void>(async (resolve, reject) => {
+            if(!this.streaming){
+                await this.startStream();
+            }
             let transId = createTransactionId();
 
             let response: AxiosResponse = await this.client({
@@ -60,10 +58,45 @@ const Basestation: any = class extends EventEmitter{
                     xcloudId: this.basestation.xCloudId,
                 }
             });
+
+            //response.data = {success: true};
     
-            console.log(response.data);
+            this.on('message', (data: any) => {
+                if(data.transId === transId){
+                    resolve(data);
+                }
+            });
         });
     }
+
+    /**
+     * Ping the basestation, keeps the event stream alive
+    */
+    private async ping(): Promise<void>{
+        let data = await this.notifyDevice({
+            action: 'set',
+            resource: `subscriptions/${this.userId}_web`,
+            publishResponse: false,
+            properties: {
+                devices: [this.basestation.deviceId]
+            }
+        });
+
+        this.emit('pong', data);
+    }
+
+    /**
+     * Get the current basestation state 
+    */
+    public async getState(): Promise<void>{
+        let data = await this.notifyDevice({
+            action: 'get',
+            resource: 'basestation',
+            publishResponse: false
+        });
+
+        return data;
+    };
 
     /**
      * Restart basestation
@@ -78,7 +111,6 @@ const Basestation: any = class extends EventEmitter{
             headers: this.headers,
         });
 
-        console.log(response.data);
         return response.data;
     }
 
@@ -86,27 +118,41 @@ const Basestation: any = class extends EventEmitter{
      * Start event stream for the basestation 
     */
     public async startStream(): Promise<void>{
-        this.events = new EventSource(`${ROUTES.SUBSCRIBE_TO_STREAM}?token=${this.headers['Authorization']}`, {
+        this.streaming = true;
+
+        let response: AxiosResponse = await this.client.get(ROUTES.SUBSCRIBE_TO_STREAM, {
             headers: {
-                'Cookie': this.CookieJar.getCookieStringSync(AUTH_URL)
-            }
+                ...this.headers,
+                xcloudId: this.basestation.xCloudId,
+                Accept: 'text/event-stream'
+            },
+            responseType: 'stream'
         });
 
-        this.events.onopen = this.open;
-        this.events.onmessage = (event: MessageEvent) => this.message(event);
-        this.events.onerror = (error: MessageEvent) => this.error(error);
+        let stream = response.data;
+
+        stream.on('data', (data: any) => this.message(data));
+        stream.on('error', (error: any) => this.error(error));
+
+        //ping event stream every 30 seconds
+        this.pingInterval = setInterval(() => this.ping(), 30 * 1000);
+
+        return;
     }
 
-    private open(): void{
-        this.emit('open', 'Event stream opened');
+    private message(event: Buffer): boolean{
+        let data = JSON.parse(event.toString().replace('event: message\ndata: ', '').replace('\n\n\n', ''));
+
+        if(data?.status === 'connected'){
+            return this.emit('open', 'Event stream opened');
+        }
+
+        return this.emit('message', data);
     }
 
-    private async message(event: MessageEvent): Promise<void>{
-        this.emit('message', event);
-    }
-
-    private async error(error: MessageEvent): Promise<void>{
-        this.emit('error', error);
+    private error(error: any): boolean{
+        this.streaming = false;
+        return this.emit('error', error);
     }
 
     /**
@@ -114,14 +160,21 @@ const Basestation: any = class extends EventEmitter{
      * @returns {Promise<void>}
     */
     public async close(): Promise<void>{
-        this.events?.close();
         this.emit('close', 'Event stream closed');
     }
 
     /**
-     * @param {boolean} enabled - enable or disable motion alerts
-     */
-    public async toggleMotionAlerts(enabled: boolean): Promise<void>{
+     * Enables receiving alerts when any camera attached to the basestation is triggered
+     * Enables the 'motionAlert' event for the basestation.
+    */
+    public enableMotionAlerts(): boolean{
+        this.on('message', (data: any) => {
+            if(data?.properties?.motionDetected){
+                this.emit('motionAlert', data);
+            }
+        });
+
+        return true;
     }
 }
 
