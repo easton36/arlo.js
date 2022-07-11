@@ -410,7 +410,7 @@ const Client: any = class{
     /**
      * Add another two factor authentication method
      * @param {string} factor - Two factor authentication method to add.
-     * @param {string} factorType - Two factor authentication method type. EMAIL or SMS\
+     * @param {string} factorType - Two factor authentication method type. EMAIL or SMS
      * @returns {Promise<void>}
     */
     public async addTwoFactorMethod(factor: string, factorType: string): Promise<void> {
@@ -571,8 +571,6 @@ const Client: any = class{
 
         return response.data;
     }
-
-
 }
 
 export default Client;

@@ -10,7 +10,7 @@ A library to interact with [Arlo](https://www.arlo.com/en-us/) systems written i
 Lots of thanks to [Arlo.py](https://github.com/jeffreydwalter/arlo)! I don't have to do nearly as much reverse engineering thanks to them.
 
 ```js
-const { Client, Camera, Basestation } = require('arlo.js');
+const { Client } = require('arlo.js');
 
 const credentials = {
     username: 'Your-Username',
