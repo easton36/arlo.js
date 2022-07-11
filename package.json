@@ -1,6 +1,6 @@
 {
   "name": "arlo.js",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "A library to interact with Arlo camera systems written in Typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
