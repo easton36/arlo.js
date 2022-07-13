@@ -1,12 +1,15 @@
 import { AxiosResponse } from 'axios';
-import assert from './utils/assert';
 import { CookieJar } from 'tough-cookie';
+
+import assert from './utils/assert';
+import { createTransactionId } from './utils/helpers';
 
 import { ROUTES } from './lib/constants';
 
 import {
     HEADERS_TYPE,
     DEVICE_RESPONSE,
+    START_STREAM_RESPONSE
 } from './lib/types';
 
 /**
@@ -15,6 +18,7 @@ import {
  */
 const Camera: any = class{
     client: any;
+    userId: string;
     headers: HEADERS_TYPE;
     camera: DEVICE_RESPONSE;
     CookieJar: CookieJar;
@@ -23,6 +27,7 @@ const Camera: any = class{
         assert(camera.deviceType === 'camera' || camera.deviceType === 'doorbell', 'Device is not a camera or a doorbell');
 
         this.client = client.client;
+        this.userId = client.userId;
         this.headers = client.headers;
         this.camera = camera;
         this.CookieJar = client.CookieJar;
@@ -91,11 +96,36 @@ const Camera: any = class{
     }
 
     /**
-     * @param {Basestation} basestation - Basestation instance that the camera is connected to
-     * @returns {Promise<string>}
+     * Start streaming the camera's video
+     * @returns {Promise<START_STREAM_RESPONSE>} - Includes the url of the RTSP stream
     */
-    public async startStream(basestation: any): Promise<string>{
-        return '';
+    public async startStreaming(): Promise<START_STREAM_RESPONSE>{
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.START_STREAM,
+            data: {
+                to: this.camera.parentId,
+                from: this.userId + '_web',
+                resource: 'cameras/' + this.camera.deviceId,
+                action: 'set',
+                responseUrl: '',
+                publishResponse: true,
+                transId: createTransactionId(),
+                properties: {
+                    activityState: 'startUserStream',
+                    cameraId: this.camera.deviceId,
+                }
+            },
+            headers: {
+                ...this.headers,
+                xcloudId: this.camera.xCloudId,
+                'Content-Type': 'application/json',
+            }
+        });
+
+        assert(response.data.success, 'Failed to start streaming');
+
+        return response.data.data;
     }
 }
 

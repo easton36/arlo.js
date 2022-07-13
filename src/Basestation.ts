@@ -164,7 +164,7 @@ const Basestation: any = class extends EventEmitter{
 
         return data;
     }
-    
+
     /**
      * Restart basestation
     */
@@ -272,40 +272,6 @@ const Basestation: any = class extends EventEmitter{
         });
 
         return data;
-    }
-
-    /**
-     * Start streaming a camera connected to the basestation
-     * @param {Camera} camera - An Arlo.js instance of the camera
-     * @returns {Promise<START_STREAM_RESPONSE>} - Includes the url of the stream
-    */
-    public async startStreaming(camera: typeof Camera): Promise<START_STREAM_RESPONSE>{
-        let response: AxiosResponse = await this.client({
-            method: 'POST',
-            url: ROUTES.START_STREAM,
-            data: {
-                to: camera.camera.parentId,
-                from: this.userId + '_web',
-                resource: 'cameras/' + camera.camera.deviceId,
-                action: 'set',
-                responseUrl: '',
-                publishResponse: true,
-                transId: createTransactionId(),
-                properties: {
-                    activityState: 'startUserStream',
-                    cameraId: camera.camera.deviceId,
-                }
-            },
-            headers: {
-                ...this.headers,
-                xcloudId: camera.camera.xCloudId,
-                'Content-Type': 'application/json',
-            }
-        });
-
-        assert(response.data.success, 'Failed to start streaming');
-
-        return response.data.data;
     }
 }
 
