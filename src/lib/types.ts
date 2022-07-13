@@ -164,3 +164,27 @@ export interface NOTIFY_PAYLOAD{
         [key: string]: any;
     }
 }
+
+export interface MODES_TYPE{
+    type: string;
+    schemaVersion: number;
+    activeModes: any[],
+    timestamp: number;
+    uniqueId: string;
+    gatewayId: string;
+}
+
+export interface EVENT_STREAM_RESPONSE{
+    resource: string;
+    action: string;
+    transId: string;
+    to: string;
+    from: string;
+    properties: {
+        [key: string]: any;
+    }
+}
+
+export interface START_STREAM_RESPONSE{
+    url: string;
+}

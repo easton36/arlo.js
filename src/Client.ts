@@ -19,7 +19,8 @@ import {
     SESSION_RESPONSE,
     ACCOUNT_RESPONSE,
     DEVICE_RESPONSE,
-    DEVICE_LOCATION_RESPONSE
+    DEVICE_LOCATION_RESPONSE,
+    MODES_TYPE
 } from './lib/types';
 
 /**
@@ -312,6 +313,20 @@ const Client: any = class{
 
         return factorItems;
     }
+
+    /**
+     * Get the arlo modes 
+     * @returns {Promise<MODE_RESPONSE[]>} Arlo modes
+    */
+    public async getModes(): Promise<MODES_TYPE[]> {
+        let response = await axios.get(ROUTES.GET_MODES, {
+            headers: this.headers
+        });
+
+        assert(response.data.success, 'Failed to get modes');
+
+        return response.data.data;
+    };
 
     /**
      * Change arlo account email

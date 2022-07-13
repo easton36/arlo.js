@@ -91,16 +91,6 @@ const Camera: any = class{
     }
 
     /**
-     * Toggle the camera on or off
-     * @param {boolean} enabled - enable or disable camera
-     * @param {Basestation} basestation - Basestation instance that the camera is connected to
-     * @returns {Promise<void>}
-    */
-    public async toggle(enabled: boolean, basestation: any): Promise<void>{
-        
-    }
-
-    /**
      * @param {Basestation} basestation - Basestation instance that the camera is connected to
      * @returns {Promise<string>}
     */

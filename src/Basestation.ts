@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { AxiosResponse } from 'axios';
+import Camera from './Camera';
 
 import assert from './utils/assert';
 import { createTransactionId } from './utils/helpers';
@@ -9,7 +10,9 @@ import { ROUTES } from './lib/constants';
 import {
     HEADERS_TYPE,
     DEVICE_RESPONSE,
-    NOTIFY_PAYLOAD
+    NOTIFY_PAYLOAD,
+    EVENT_STREAM_RESPONSE,
+    START_STREAM_RESPONSE
 } from './lib/types';
 
 const Basestation: any = class extends EventEmitter{
@@ -60,12 +63,14 @@ const Basestation: any = class extends EventEmitter{
             });
 
             //response.data = {success: true};
-    
-            this.on('message', (data: any) => {
+            let processData = (data: any) => {
                 if(data.transId === transId){
+                    this.removeListener('message', processData);
                     resolve(data);
                 }
-            });
+            };
+    
+            this.on('message', processData);
         });
     }
 
@@ -83,35 +88,6 @@ const Basestation: any = class extends EventEmitter{
         });
 
         this.emit('pong', data);
-    }
-
-    /**
-     * Get the current basestation state 
-    */
-    public async getState(): Promise<void>{
-        let data = await this.notifyDevice({
-            action: 'get',
-            resource: 'basestation',
-            publishResponse: false
-        });
-
-        return data;
-    };
-
-    /**
-     * Restart basestation
-    */
-    public async restart(): Promise<void>{
-        let response: AxiosResponse = await this.client({
-            method: 'POST',
-            url: ROUTES.RESTART_BASESTATION,
-            body: {
-                deviceId: this.basestation.deviceId,
-            },
-            headers: this.headers,
-        });
-
-        return response.data;
     }
 
     /**
@@ -164,6 +140,48 @@ const Basestation: any = class extends EventEmitter{
     }
 
     /**
+     * Get the current basestation state 
+    */
+     public async getState(): Promise<void>{
+        let data = await this.notifyDevice({
+            action: 'get',
+            resource: 'basestation',
+            publishResponse: false
+        });
+
+        return data;
+    }
+
+    /**
+     * Get the current state of the cameras attached to the basestation
+    */
+    public async getCamerasState(): Promise<void>{
+        let data = await this.notifyDevice({
+            action: 'get',
+            resource: 'camera',
+            publishResponse: false
+        });
+
+        return data;
+    }
+    
+    /**
+     * Restart basestation
+    */
+    public async restart(): Promise<void>{
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.RESTART_BASESTATION,
+            body: {
+                deviceId: this.basestation.deviceId,
+            },
+            headers: this.headers,
+        });
+
+        return response.data;
+    }
+
+    /**
      * Enables receiving alerts when any camera attached to the basestation is triggered
      * Enables the 'motionAlert' event for the basestation.
     */
@@ -175,6 +193,119 @@ const Basestation: any = class extends EventEmitter{
         });
 
         return true;
+    }
+
+    /**
+     * Create a custom mode
+     * @param {string} mode - The name of the mode
+     * @returns {Promise<EVENT_STREAM_RESPONSE>}
+    */
+    public async createCustomMode(mode: string): Promise<void>{
+        let data = await this.notifyDevice({
+            from: this.userId + '_web',
+            to: this.basestation.parentId,
+            action: 'set',
+            resource: 'modes',
+            transId: createTransactionId(),
+            publishResponse: true,
+            properties: {
+                active: mode,
+            }
+        });
+
+        return data;
+    }
+
+    /**
+     * Arm the cameras attached to the basestation
+     * @returns {Promise<EVENT_STREAM_RESPONSE>}
+    */
+    public async arm(): Promise<void>{
+        let data = await this.createCustomMode('mode1');
+
+        return data;
+    }
+
+    /**
+     * Disarm the cameras attached to the basestation
+     * @returns {Promise<EVENT_STREAM_RESPONSE>}
+    */
+    public async disarm(): Promise<void>{
+        let data = await this.createCustomMode('mode0');
+
+        return data;
+    }
+
+    /**
+     * Adjust the brightness of a cameras attached to the basestation
+     * @param {Camera} camera - An Arlo.js instance of the camera
+     * @param {number} brightness - The brightness level. Between -2 and 2, and increments of 1.
+     * @returns {Promise<EVENT_STREAM_RESPONSE>}
+    */
+    public async setBrightness(camera: typeof Camera, brightness: number): Promise<void>{
+        let data = await this.notifyDevice({
+            action: 'set',
+            resource: 'cameras/' + camera.camera.deviceId,
+            publishResponse: true,
+            properties: {
+                brightness: brightness
+            }
+        });
+
+        return data;
+    }
+
+    /**
+     * Toggle a camera on or off
+     * @param {Camera} camera - An Arlo.js instance of the camera
+     * @param {boolean} on - Whether to turn the camera on or off
+     * @returns {Promise<EVENT_STREAM_RESPONSE>}
+    */
+    public async setCameraOn(camera: typeof Camera, on: boolean): Promise<void>{
+        let data = await this.notifyDevice({
+            action: 'set',
+            resource: 'cameras/' + camera.camera.deviceId,
+            publishResponse: true,
+            properties: {
+                privacyActive: on
+            }
+        });
+
+        return data;
+    }
+
+    /**
+     * Start streaming a camera connected to the basestation
+     * @param {Camera} camera - An Arlo.js instance of the camera
+     * @returns {Promise<START_STREAM_RESPONSE>} - Includes the url of the stream
+    */
+    public async startStreaming(camera: typeof Camera): Promise<START_STREAM_RESPONSE>{
+        let response: AxiosResponse = await this.client({
+            method: 'POST',
+            url: ROUTES.START_STREAM,
+            data: {
+                to: camera.camera.parentId,
+                from: this.userId + '_web',
+                resource: 'cameras/' + camera.camera.deviceId,
+                action: 'set',
+                responseUrl: '',
+                publishResponse: true,
+                transId: createTransactionId(),
+                properties: {
+                    activityState: 'startUserStream',
+                    cameraId: camera.camera.deviceId,
+                }
+            },
+            headers: {
+                ...this.headers,
+                xcloudId: camera.camera.xCloudId,
+                'Content-Type': 'application/json',
+            }
+        });
+
+        assert(response.data.success, 'Failed to start streaming');
+
+        return response.data.data;
     }
 }
 
