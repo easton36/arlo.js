@@ -41,7 +41,7 @@
     "prettier": "2.7.1"
   },
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.1.2",
     "axios-cookiejar-support": "^4.0.2",
     "events": "^3.3.0",
     "readline-sync": "^1.4.10",
