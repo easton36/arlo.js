@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/events": "^3.0.0",
-    "@types/eventsource": "^1.1.9",
+    "@types/eventsource": "^1.1.10",
     "@types/node": "^18.0.6",
     "@types/readline-sync": "^1.4.4",
     "@types/tough-cookie": "^4.0.2",
